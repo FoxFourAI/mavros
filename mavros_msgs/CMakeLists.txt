@@ -51,6 +51,7 @@ add_message_files(
   OverrideRCIn.msg
   Param.msg
   ParamValue.msg
+  PidTuning.msg
   PlayTuneV2.msg
   PositionTarget.msg
   RCIn.msg
