@@ -52,6 +52,7 @@ add_message_files(
   Param.msg
   ParamValue.msg
   PidTuning.msg
+  VisionPoseEstimate.msg
   PlayTuneV2.msg
   PositionTarget.msg
   RCIn.msg

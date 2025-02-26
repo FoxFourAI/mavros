@@ -19,6 +19,7 @@
 #include <mavros/setpoint_mixin.h>
 #include <eigen_conversions/eigen_msg.h>
 
+#include <mavros_msgs/VisionPoseEstimate.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 
@@ -58,6 +59,7 @@ public:
 		}
 		else {
 			vision_sub = sp_nh.subscribe("pose", 10, &VisionPoseEstimatePlugin::vision_cb, this);
+			vision_sub = sp_nh.subscribe("pose_reset", 10, &VisionPoseEstimatePlugin::vision_reset_cb, this);
 			vision_cov_sub = sp_nh.subscribe("pose_cov", 10, &VisionPoseEstimatePlugin::vision_cov_cb, this);
 		}
 	}
@@ -83,7 +85,7 @@ private:
 	/**
 	 * @brief Send vision estimate transform to FCU position controller
 	 */
-	void send_vision_estimate(const ros::Time &stamp, const Eigen::Affine3d &tr, const geometry_msgs::PoseWithCovariance::_covariance_type &cov)
+	void send_vision_estimate(const ros::Time &stamp, const Eigen::Affine3d &tr, const geometry_msgs::PoseWithCovariance::_covariance_type &cov, uint8_t reset_counter=0)
 	{
 		/**
 		 * @warning Issue #60.
@@ -150,6 +152,15 @@ private:
 		ftf::Covariance6d cov {};	// zero initialized
 
 		send_vision_estimate(req->header.stamp, tr, cov);
+	}
+
+	void vision_reset_cb(const mavros_msgs::VisionPoseEstimate::ConstPtr &req)
+	{
+		Eigen::Affine3d tr;
+		tf::poseMsgToEigen(req->pose.pose, tr);
+		ftf::Covariance6d cov {};	// zero initialized
+
+		send_vision_estimate(req->header.stamp, tr, cov, req->reset_counter);
 	}
 
 	void vision_cov_cb(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &req)
