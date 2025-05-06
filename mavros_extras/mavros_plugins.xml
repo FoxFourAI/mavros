@@ -5,6 +5,10 @@ import mavros_cog
 mavros_cog.outl_plugins_xml('src/plugins', 'mavros_extras_plugins')
 ]]] -->
 <library path="mavros_extras_plugins">
+  <class name="pid_tuning" type="mavros::extra_plugins::PIDTuningPlugin" base_class_type="mavros::plugin::PluginBase">
+    <description>Plugin to publish/receive pid tuning messages</description>
+  </class>
+
   <class name="adsb" type="mavros::plugin::PluginFactoryTemplate&lt;mavros::extra_plugins::ADSBPlugin&gt;" base_class_type="mavros::plugin::PluginFactory">
     <description>@brief ADS-B Vehicle plugin
 @plugin adsb

@@ -82,6 +82,7 @@ set(msg_files
   msg/Param.msg
   msg/ParamEvent.msg
   msg/ParamValue.msg
+  msg/PidTuning.msg
   msg/PlayTuneV2.msg
   msg/PositionTarget.msg
   msg/RCIn.msg
