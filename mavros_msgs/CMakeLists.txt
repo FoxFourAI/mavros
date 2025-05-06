@@ -102,6 +102,7 @@ set(msg_files
   msg/VehicleInfo.msg
   msg/VfrHud.msg
   msg/Vibration.msg
+  msg/VisionPoseEstimate.msg
   msg/Waypoint.msg
   msg/WaypointList.msg
   msg/WaypointReached.msg

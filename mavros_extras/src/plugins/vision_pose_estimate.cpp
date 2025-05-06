@@ -29,6 +29,7 @@
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "mavros_msgs/msg/landing_target.hpp"
+#include "mavros_msgs/msg/vision_pose_estimate.hpp"
 
 namespace mavros
 {
@@ -68,6 +69,9 @@ public:
           vision_sub = node->create_subscription<geometry_msgs::msg::PoseStamped>(
             "~/pose", 10, std::bind(
               &VisionPoseEstimatePlugin::vision_cb, this, _1));
+          vision_sub_reset = node->create_subscription<mavros_msgs::msg::VisionPoseEstimate>(
+            "~/pose_reset", 10, std::bind(
+              &VisionPoseEstimatePlugin::vision_reset_cb, this, _1));
           vision_cov_sub = node->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
             "~/pose_cov", 10, std::bind(
               &VisionPoseEstimatePlugin::vision_cov_cb, this, _1));
@@ -99,6 +103,7 @@ private:
   friend class TF2ListenerMixin;
 
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr vision_sub;
+  rclcpp::Subscription<mavros_msgs::msg::VisionPoseEstimate>::SharedPtr vision_sub_reset;
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr vision_cov_sub;
 
   std::string tf_frame_id;
@@ -114,7 +119,8 @@ private:
    */
   void send_vision_estimate(
     const rclcpp::Time & stamp, const Eigen::Affine3d & tr,
-    const geometry_msgs::msg::PoseWithCovariance::_covariance_type & cov)
+    const geometry_msgs::msg::PoseWithCovariance::_covariance_type & cov,
+    uint8_t reset_counter=0)
   {
     if (last_transform_stamp == stamp) {
       RCLCPP_DEBUG_THROTTLE(
@@ -147,6 +153,7 @@ private:
     vp.roll = rpy.x();
     vp.pitch = rpy.y();
     vp.yaw = rpy.z();
+    vp.reset_counter = reset_counter;
     // [[[end]]] (checksum: 0aed118405958e3f35e8e7c9386e812f)
 
     // just the URT of the 6x6 Pose Covariance Matrix, given
@@ -175,6 +182,15 @@ private:
     ftf::Covariance6d cov {};                   // zero initialized
 
     send_vision_estimate(req->header.stamp, tr, cov);
+  }
+
+  void vision_reset_cb(const mavros_msgs::msg::VisionPoseEstimate::SharedPtr req)
+  {
+    Eigen::Affine3d tr;
+    tf2::fromMsg(req->pose.pose, tr);
+    ftf::Covariance6d cov {};                   // zero initialized
+
+    send_vision_estimate(req->header.stamp, tr, cov, req->reset_counter);
   }
 
   void vision_cov_cb(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr req)
