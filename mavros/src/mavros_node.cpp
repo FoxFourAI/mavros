@@ -26,7 +26,7 @@
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::executors::MultiThreadedExecutor exec(rclcpp::ExecutorOptions(), 2);
+  rclcpp::experimental::executors::EventsExecutor exec{std::make_unique<rclcpp::experimental::executors::SimpleEventsQueue>(), false};
 
   rclcpp::NodeOptions options;
   // options.use_intra_process_comms(true);
